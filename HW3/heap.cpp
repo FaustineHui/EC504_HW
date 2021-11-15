@@ -5,6 +5,7 @@
 #include <math.h>
 #include <iomanip>
 #include <cstdlib>
+#include <ratio>
 using namespace std;
 
 
@@ -26,11 +27,25 @@ void HeapSort(int *Heap, int n);
 
 void swap(int* a, int* b)
 {
-    OpCount++;
+    //OpCount++;//
     int temp;
     temp = *a;
     *a = *b;
     *b = temp;
+}
+
+int  uniform(int  m)
+{
+    srand(time(0));
+    return rand() % m;
+}
+
+void initialize_and_permute(int* permutation, int n)
+{
+    for (int i = 0; i <= n - 2; i++) {
+        int  j = i + uniform(n - i); /* A random integer such that i ¡Ü j < n */
+        swap(&permutation[i], &permutation[j]);   /* Swap the randomly picked element with permutation[i] */
+    }
 }
 
 int main(int argc, char *argv[]) 
@@ -38,7 +53,7 @@ int main(int argc, char *argv[])
   /* Timeing and IO setup */
   chrono::time_point<chrono::steady_clock> start, stop; 
   chrono::duration<double> difference_in_time;
-  double difference_in_seconds_heap_sort;  // Holds the final run time
+/*  double difference_in_seconds_heap_sort; */ // Holds the final run time
   ifstream infile;
   ofstream outfile;
   
@@ -112,7 +127,7 @@ int main(int argc, char *argv[])
  Test and compare  efficiency of Heap Sort  relative to Merge Sort
  */
       
-  int* a_tmp = new int[n+1];      
+/*  int* a_tmp = new int[n+1];   */   
       
   OpCount = 0;
   start = chrono::steady_clock::now();
@@ -120,8 +135,7 @@ int main(int argc, char *argv[])
    // REPLACE WITH HEAP SORT //
   HeapSort(Heap, n);
   stop = chrono::steady_clock::now();
-  difference_in_time = stop - start;
-  difference_in_seconds_heap_sort = double(difference_in_time.count());
+  cout << chrono::duration_cast<chrono::microseconds>(stop - start).count() << endl;
   //Begin output file : DO NOT CHANGE  
  
   outfile << Heap[0] << endl;
@@ -129,25 +143,83 @@ int main(int argc, char *argv[])
     outfile << Heap[i] << endl;
 
   //End output file
-  int num[17];
-  for (int i = 0; i < 17; i++)
-    num[i] = pow(2, i + 3);
 
   ofstream outall("partb1.txt");
-  outall << setw(5) << "#N" << setw(20) << "HeapSort"<< endl;
+  outall << setw(10) << "#N" << setw(30) << "HeapSort (time:microseconds)"<< endl;
 
   for (int i = 0; i < 17; i++) {
-      int N = num[i];
+      int index = i + 3;
+      int N = pow(2, index);
       Heap = new int[N + 1];
       Heap[0] = N;  // Set zero entry in in heap to n
+      srand(time(0));
       for (int i = 1; i < N + 1; i++)  Heap[i] = rand() % 100000;
 
       OpCount = 0;
+      start = chrono::steady_clock::now();
       HeapSort(Heap, N);
-      int heapresult = OpCount;
-      outall << setw(5) << N << setw(20) << heapresult << endl;
+      stop = chrono::steady_clock::now();
+      double result = chrono::duration_cast<chrono::nanoseconds>(stop - start).count();
+      result = result / 1000;
+      outall << setw(10) << N << setw(30) << result << endl;
   }
   outall.close();
+
+  //ofstream outall("partb2.txt");
+  //outall << setw(10) << "#Round" << setw(30) << "HeapSort (time:microseconds)" << endl;
+  //int k = 100;
+  //Heap[0] = k;  // Set zero entry in in heap to n
+  //for (int i = 1; i < k + 1; i++) {
+  //    Heap[i] = rand() % 100000;
+  //}
+  //
+  //int* tempHeap = NULL;
+  //tempHeap = new int[k + 1];
+  //for (int i = 0; i < k + 1; i++) {
+  //    tempHeap[i] = Heap[i];
+  //}
+  //for (int i = 0; i < 100; i++) {
+  //    start = chrono::steady_clock::now();
+  //    HeapSort(tempHeap, k);
+  //    stop = chrono::steady_clock::now();
+  //    int Round = i + 1;
+  //    double result = chrono::duration_cast<chrono::nanoseconds>(stop - start).count();
+  //    result = result / 1000;
+  //    outall << setw(10) << Round << setw(30) << result << endl;
+  //    for (int j = 0; j < k + 1; j++) tempHeap[j] = Heap[j];
+  //    initialize_and_permute(tempHeap, k);
+  //}
+  //outall.close();
+
+  //ofstream outall("partb3.txt");
+  //outall << setw(10) << "#N" << setw(30) << "HeapSort (time:microseconds)" << endl;
+  //
+  //for (int i = 0; i < 17; i++) {
+  //    int index = i + 3;
+  //    int N = pow(2, index);
+  //    Heap = new int[N + 1];
+  //    Heap[0] = N;  // Set zero entry in in heap to n
+  //    for (int j = 1; j < N + 1; j++)  Heap[j] = rand() % 100000;
+
+  //    int* tempHeap = NULL;
+  //    tempHeap = new int[N + 1];
+  //    for (int j = 0; j < N + 1; j++) tempHeap[j] = Heap[j];
+
+  //    double average = 0;
+  //    for (int j = 0; j < 100; j++) {
+  //        start = chrono::steady_clock::now();
+  //        HeapSort(tempHeap, N);
+  //        stop = chrono::steady_clock::now();
+  //        average += chrono::duration_cast<chrono::nanoseconds>(stop - start).count();
+  //        //cout << average << endl;
+  //        for (int k = 0; k < N + 1; k++) tempHeap[k] = Heap[k];
+  //        initialize_and_permute(tempHeap, N);
+  //    }
+  //    double result = average / 100000;
+  //    //cout << result << endl;
+  //    outall << setw(10) << N << setw(30) << result << endl;
+  //}
+  //outall.close();
   return 0;
 }
 
@@ -189,6 +261,21 @@ Provide funtions below
          maxheap(Heap, n, maximum);
      }
  }
+//void maxheap(int* Heap, int n, int i) {
+//    int father = i;
+//    int leftnode = 2 * father;
+//    while (leftnode <= n) {
+//        if (leftnode < n && Heap[leftnode] < Heap[leftnode+1]) {
+//            leftnode++;
+//        }
+//        if (Heap[father] < Heap[leftnode]) {
+//            swap(&Heap[father], &Heap[leftnode]);
+//            father = leftnode;
+//            leftnode = 2 * father;
+//        }
+//        else break;
+//    }
+//}
 
  void Heapify(int *Heap, int n)
  {
@@ -228,6 +315,6 @@ void HeapSort(int *Heap, int n)
     Heapify(Heap, n);
     for (int i = n; i >= 2; i--) {
         swap(&Heap[i], &Heap[1]);
-        Heapify(Heap, n - 1);
+        maxheap(Heap, i - 1, 1);
     }
 }
